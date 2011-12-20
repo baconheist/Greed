@@ -23,7 +23,7 @@
 		var_dump("raw gamedat: ".$gamedat);	
 		if ($gamedat != "")
 		{	
-			echo "gamedat exists <br />";
+			//echo "gamedat exists <br />";
 			$base_64_decoded_data=base64_decode($gamedat);
 			var_dump("base 64 decoded: ".$base_64_decoded_data);	
 			$decrypted_data_json = rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key,$base_64_decoded_data, MCRYPT_MODE_ECB), "\0");
@@ -32,13 +32,14 @@
 			$decrypted_data = json_decode($decrypted_data_json, true);
 			$gamedat=$decrypted_data;
 			var_dump('decrypted game data: ', $gamedat);		
-			echo "turn=".$gamedat['player_map'][$gamedat['turn']]."<br />";
-			
+			echo "turn: ".$gamedat['player_map'][$gamedat['turn']]."<br />";
+			echo "Your score at the start of this turn:".$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]]."<br />";
+			echo $gamedat['player_map'][($gamedat['turn'] + 1) % count($gamedat['player_map'])]."'s score:".$gamedat['players'][$gamedat['player_map'][($gamedat['turn'] + 1) % count($gamedat['player_map'])]]."<br />";
 			if ($_POST['name']!="")
 			{
 				echo "names just entered <br />";
-				$gamedat['players']['name'] = $_POST['name'];
-				$gamedat['players']['oppname'] = $_POST['oppname'];
+				$gamedat['players'][$_POST['name']]=0;
+				$gamedat['players'][$_POST['oppname']]=0;
 				$gamedat['player_map'][0] = $_POST['name'];
 				$gamedat['player_map'][1] = $_POST['oppname'];
 				$gamedat['turn'] = 0;
@@ -49,17 +50,17 @@
 			}			
 		}
 		else{
-			echo "gamedat doesn't exist <br /><br />";
+			//echo "gamedat doesn't exist <br /><br />";
 		
 			echo "What's your name?";
 			echo "<input type=\"text\" name=\"name\"/><br />";
 			echo "What's your opponent's name?";
 			echo "<input type=\"text\" name=\"oppname\"/><br /><br />";	
 
-			$gamedat['players']['name'] = "player1";
-			$gamedat['players']['oppname'] = "player2";
-			$gamedat['player_map'][0] = $gamedat['players']['name'];
-			$gamedat['player_map'][1] = $gamedat['players']['oppname'];
+			$gamedat['players'][0] = "player1";
+			$gamedat['players'][1] = "player2";
+			$gamedat['player_map'][0] = $gamedat['players'][0];
+			$gamedat['player_map'][1] = $gamedat['players'][1];
 			$gamedat['turn'] = 0;
 		}
 		
@@ -321,28 +322,58 @@
 		
 		function finish(&$gamedat, $key)
 		{
-			foreach ($gamedat['dice'] as &$value)
+			
+			
+			$gamedat['hand'] ="";
+			$gamedat['used'] ="";
+			
+						for ($i=0;$i<=5;$i++)
 			{
-				$value=0;
+
+		
+				$x=rand(0,5);
+				$gamedat[hand][$i] = $x;
+				//echo $vals[$gamedat[hand][$i]];
+				//echo "<input type=\"hidden\" name=\"".$i."\" value=\"".$vals[$gamedat[hand][$i]]."\">\n";
+				$gamedat['dice'][$vals[$gamedat[hand][$i]]]++;
+				//echo "(\$gamedat['dice'][".$vals[$gamedat[hand][$i]]."]=".$gamedat['dice'][$vals[$gamedat[hand][$i]]].")<br />\n";
+				
+
 			}
-			foreach ($gamedat['hand'] as &$value)
-			{
-				$value=0;
-			}
-			//foreach ($gamedat['used'] as &$value)
-			//{
-			//	$value=0;
-			//}
 			
 			//breaks on a failed first roll
-			$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]]=$score;
+			$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]]+=$gamedat['score'];
+			
+			$gamedat['score']=0;
 			$gamedat['turn'] = ($gamedat['turn'] + 1) % count($gamedat['player_map']);
 			$data_json = json_encode($gamedat);
+			var_dump("json encoded: ".$data_json);
 			$encrypted_data_json = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $data_json, MCRYPT_MODE_ECB);
+			var_dump("encrypted json: ".$encrypted_data_json);
+	
 			$base_64_encoded_data = base64_encode($encrypted_data_json);
+			var_dump("base 64 encoded: ".$base_64_encoded_data);
 			$urlencoded_data = rawurlencode($base_64_encoded_data);
-
-			echo "?gamedat=".$urlencoded_data."<br />";
+			var_dump("urlencoded: ".$urlencoded_data);
+			//echo "?gamedat=".$urlencoded_data."<br />";
+			
+			//turn back into gamedat for testing..
+			$gamedat=$base_64_encoded_data;
+			
+			$base_64_decoded_data=base64_decode($gamedat);
+			var_dump("base 64 decoded: ".$base_64_decoded_data);	
+			$decrypted_data_json = rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key,$base_64_decoded_data, MCRYPT_MODE_ECB), "\0");
+			var_dump("decrypted data json: ".$decrypted_data_json);
+			$decrypted_data = json_decode($decrypted_data_json, true);
+			$gamedat=$decrypted_data;
+			var_dump('decrypted game data: ', $gamedat);
+			$addy= $gamedat['player_map'][$gamedat['turn']];
+			echo $addy;
+			mail($addy, 'your turn',  "http://www.baconheist.com/greed/index.php?gamedat=".$urlencoded_data);
+			
+			echo "<a href=\"http://greed.localhost/index.php?gamedat=".$urlencoded_data."\">testing link</a><br />";
+			
+			
 		}
 	
 			
@@ -356,7 +387,7 @@
 			encrypt($gamedat, $key);
 			
 			echo "<input type=\"hidden\" name=\"score\" value=\"".$score."\">\n";	
-			echo "<br />score: ".$score."<br />";
+			echo "<br />score: ".$gamedat['score']."<br />";
 		}
 		
 		elseif(isset($_POST['reroll']))
@@ -368,7 +399,7 @@
 			encrypt($gamedat, $key);
 			
 			echo "<input type=\"hidden\" name=\"score\" value=\"".$score."\">\n";	
-			echo "<br />score: ".$score."<br />";
+			echo "<br />score: ".$gamedat['score']."<br />";
 			
 		}
 		
@@ -377,11 +408,6 @@
 		{
 			calckept($gamedat, $_POST['choice'], $vals);
 			echo "saving ".$gamedat[score];	
-			var_dump($gamedat);
-			//$score = (int) $gamedat[score];
-			//$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]]=$score;
-			//$gamedat['turn'] = ($gamedat['turn'] + 1) % count($gamedat['player_map']);
-			var_dump($gamedat);
 			finish($gamedat, $key);
 			
 		}
@@ -389,7 +415,14 @@
 		else 
 		{
 
-			roll($gamedat, $vals);
+			if (isset($gamedat['dice']))
+			{
+				display($gamedat, $vals);	
+			}
+			else
+			{
+				roll($gamedat, $vals);
+			}
 			choices($gamedat, $vals);
 			encrypt($gamedat, $key);
 		}
@@ -402,9 +435,6 @@
 			<input type="submit" id="keep" name="keep" value="select and save" disabled="true">
 			
 		</form>
-		<?php
-		//echo "Or score 0 and give this to your mate: http://www.baconheist.com/greed/index.php?gamedat=".urlencode($gamedat);
-		echo $gamedat['score']
-		?>
+
 	</body>
 </html>
