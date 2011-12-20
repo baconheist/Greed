@@ -80,7 +80,7 @@
 		}
 		
 		
-		function choices($gamedat, $vals)
+		function choices($gamedat, $vals, $key)
 		{
 			echo "calculating choices <br/>";
 			$scored=false;
@@ -383,7 +383,7 @@
 			echo "select more<br />";
 			calckept($gamedat, $_POST['choice'], $vals);
 			display($gamedat, $vals);
-			choices($gamedat, $vals);
+			choices($gamedat, $vals, $key);
 			encrypt($gamedat, $key);
 			
 			echo "<input type=\"hidden\" name=\"score\" value=\"".$score."\">\n";	
@@ -395,7 +395,7 @@
 			echo "reroll<br />";
 			calckept($gamedat, $_POST['choice'], $vals);
 			reroll($gamedat, $vals);
-			choices($gamedat, $vals);
+			choices($gamedat, $vals, $key);
 			encrypt($gamedat, $key);
 			
 			echo "<input type=\"hidden\" name=\"score\" value=\"".$score."\">\n";	
@@ -423,7 +423,7 @@
 			{
 				roll($gamedat, $vals);
 			}
-			choices($gamedat, $vals);
+			choices($gamedat, $vals, $key);
 			encrypt($gamedat, $key);
 		}
 			
