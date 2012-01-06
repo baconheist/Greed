@@ -473,9 +473,9 @@
 					
 				}
 
-				if ($gamedat['player_map'][0]!=$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]])
+				if ($gamedat['player_map'][0]!=$gamedat['player_map'][$gamedat['turn']])
 				{
-					$new0=$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]];
+					$new0=$gamedat['player_map'][$gamedat['turn']];
 					$gamedat['player_map'][1]=$gamedat['player_map'][0];
 					$gamedat['player_map'][0]=$new0;					
 				}
@@ -487,6 +487,8 @@
 				$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]] = 0;
 				$gamedat['turn'] = ($gamedat['turn'] + 1) % count($gamedat['player_map']);
 				$gamedat['score']=0;
+				$gamedat['turn']=0;
+				
 				$data_json = json_encode($gamedat);
 				//var_dump("json encoded: ".$data_json);
 				$encrypted_data_json = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $data_json, MCRYPT_MODE_ECB);
