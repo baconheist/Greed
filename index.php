@@ -9,11 +9,15 @@
 			document.getElementById("selectmore").disabled=false;
 			document.getElementById("reroll").disabled=false;
 			document.getElementById("keep").disabled=false;
+			if (document.gameform.scored.value==1)
+				{
+				document.getElementById("selectmore").disabled=true;				
+				}
 			}
 		</script>
     </head>
     <body>
-		<form action="index.php" method="POST"> 
+		<form name="gameform" action="index.php" method="POST"> 
 			
 		<?php
 		$vals = array('$', 'G','R','E1','E2','D');
@@ -35,6 +39,12 @@
 			echo "turn: ".$gamedat['player_map'][$gamedat['turn']]."<br />";
 			echo "Your score at the start of this turn:".$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]]."<br />";
 			echo $gamedat['player_map'][($gamedat['turn'] + 1) % count($gamedat['player_map'])]."'s score:".$gamedat['players'][$gamedat['player_map'][($gamedat['turn'] + 1) % count($gamedat['player_map'])]]."<br />";
+			//var_dump($gamedat);
+			if ($gamedat['finish']==true)
+			{
+				//echo "game should end now, right?";
+				finish($gamedat, $key, $vals);
+			}
 			if ($_POST['name']!="")
 			{
 				echo "names just entered <br />";
@@ -83,73 +93,87 @@
 		function choices($gamedat, $vals, $key)
 		{
 			echo "calculating choices <br/>";
-			$scored=false;
+			$scored=0;
 			//var_dump($gamedat);
 			if ($gamedat['dice'][$vals[0]] >= 3 ) //$$$
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"$$$\" onclick=\"enableElements()\">three ".$vals[0]."s\n";
 			}
 
 			if ($gamedat['dice'][$vals[1]] >= 1 ) //G
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"G\" onclick=\"enableElements()\">one ".$vals[1]."\n";
 			}
 			
+			if ($gamedat['dice'][$vals[1]] >= 2 ) //extra G
+			{
+				$scored++;
+			}			
+			
 			if ($gamedat['dice'][$vals[1]] >= 3 ) //GGG
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"GGG\" onclick=\"enableElements()\">three".$vals[1]."s\n";
 			}
 
 			if ($gamedat['dice'][$vals[5]] >= 1 ) //D
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"D\" onclick=\"enableElements()\">one ".$vals[5]."\n";
+			}
+			
+			if ($gamedat['dice'][$vals[5]] >= 2 ) //extra D
+			{
+				$scored++;
 			}
 
 			if ($gamedat['dice'][$vals[2]] >= 3 ) //RRR
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"RRR\" onclick=\"enableElements()\">three ".$vals[2]."s\n";
 			}
 
 			if ($gamedat['dice'][$vals[3]] >= 3 ) //E1E1E1
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"E1E1E1\" onclick=\"enableElements()\">three ".$vals[3]."s\n";
 			}
 
 			if ($gamedat['dice'][$vals[4]] >= 3 ) //E2E2E2
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"E2E2E2\" onclick=\"enableElements()\">three ".$vals[4]."s\n";
 			}
 
 			if ($gamedat['dice'][$vals[5]] >= 4) //DDDD
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"DDDD\" onclick=\"enableElements()\">four ".$vals[5]."s\n";
 			}
 			
 			if ($gamedat['dice'][$vals[0]] == 1 && $gamedat['dice'][$vals[1]] == 1 && $gamedat['dice'][$vals[2]] == 1 && $gamedat['dice'][$vals[3]] == 1 && $gamedat['dice'][$vals[4]] == 1 && $gamedat['dice'][$vals[5]] == 1) //$GREED
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"greed\" onclick=\"enableElements()\">\$GREED!\n";
 			}
 			
 			if ($gamedat['dice'][$vals[0]] == 6 || $gamedat['dice'][$vals[1]] == 6 || $gamedat['dice'][$vals[2]] == 6 || $gamedat['dice'][$vals[3]] == 6 || $gamedat['dice'][$vals[4]] == 6 || $gamedat['dice'][$vals[5]]==6) //six of a kind
 			{
-				$scored=true;
+				$scored++;
 				echo "<br /><input type=\"radio\" name=\"choice\" value=\"sixofakind\" onclick=\"enableElements()\">Six of a kind!\n";
 			}
 			
-			if ($scored==false)
+			if ($scored==0)
 			{
 				$gamedat[score]=0;
 				echo "No scoring dice. Your turn is over";
 				finish($gamedat, $key, $vals);
+			}
+			if ($scored==1)
+			{
+				echo "<input type=\"hidden\" name=\"scored\" value=\"1\">\n";
 			}
 		}
 		
@@ -223,8 +247,6 @@
 			}
 			
 			
-			
-
 			elseif ($choice == 'GGG' && $gamedat['dice']['G']>=3)
 			{
 				echo "used a GGG<br />";
@@ -418,9 +440,29 @@
 
 			}
 			//var_dump('set array: ', $gamedat);
-			//breaks on a failed first roll
+
 			$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]]+=$gamedat['score'];
-			if ($gamedat['players'][$gamedat['player_map'][$gamedat['turn']]] >=5000)
+			//var_dump($gamedat);
+			if ($gamedat['turn']==1 && $gamedat['players'][$gamedat['player_map'][$gamedat['turn']]] >=5000)
+			{
+				$gamedat['finish']=true;
+			}
+			
+			if ($gamedat['turn']==1 && $gamedat['finishnextturn']==true)
+			{
+				$gamedat['finish']=true;
+			}
+			
+			
+			if ($gamedat['turn']==0 && $gamedat['players'][$gamedat['player_map'][$gamedat['turn']]] >=5000 && $gamedat['finish']!=true)
+			{
+				echo "You've reached 5000, but because you were the first player, your opponent gets another turn...";
+				$gamedat['finishnextturn']=true;
+			}			
+			
+			//echo $gamedat['finish'];
+			
+			if ($gamedat['players'][$gamedat['player_map'][$gamedat['turn']]] >=5000 && $gamedat['finish']==true)
 			{
 				echo "you've totally won... let me email everyone...";
 				
@@ -431,10 +473,20 @@
 					
 				}
 
+				if ($gamedat['player_map'][0]!=$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]])
+				{
+					$new0=$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]];
+					$gamedat['player_map'][1]=$gamedat['player_map'][0];
+					$gamedat['player_map'][0]=$new0;					
+				}
+
+				$gamedat['finish']=false;
+				$gamedat['finishnextturn']=false;
 				$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]] = 0;
 				$gamedat['turn'] = ($gamedat['turn'] + 1) % count($gamedat['player_map']);
 				$gamedat['players'][$gamedat['player_map'][$gamedat['turn']]] = 0;
 				$gamedat['turn'] = ($gamedat['turn'] + 1) % count($gamedat['player_map']);
+				$gamedat['score']=0;
 				$data_json = json_encode($gamedat);
 				//var_dump("json encoded: ".$data_json);
 				$encrypted_data_json = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $data_json, MCRYPT_MODE_ECB);
@@ -444,6 +496,7 @@
 				//var_dump("base 64 encoded: ".$base_64_encoded_data);
 				$urlencoded_data = rawurlencode($base_64_encoded_data);
 				//var_dump($gamedat);
+				
 				echo "<a href=\"http://www.baconheist.com/greed/index.php?gamedat=".$urlencoded_data."\">use this link to start a new game.</a><br />";
 				exit;
 			
