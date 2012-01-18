@@ -4,9 +4,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>e-GREED</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1"> 
-			<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0/jquery.mobile-1.0.min.css" />
-			<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
-			<script type="text/javascript" src="http://code.jquery.com/mobile/1.0/jquery.mobile-1.0.min.js"></script>
+
 		<script type="text/javascript">
 			function enableElements()
 			{
@@ -21,13 +19,7 @@
 		</script>
     </head>
     <body>
-		<div data-role="page">
 
-	<div data-role="header">
-		<h1>My Title</h1>
-	</div><!-- /header -->
-
-	<div data-role="content">
 		<form name="gameform" action="index.php" method="POST"> 
 			
 		<?php
@@ -105,23 +97,23 @@
 		{
 			
 			
-			echo "<fieldset data-role=\"controlgroup\" data-type=\"horizontal\">";
-			echo "<legend>Choices:</legend>";
+			//echo "<fieldset data-role=\"controlgroup\" data-type=\"horizontal\">";
+			//echo "<legend>Choices:</legend>";
 			$scored=0;
 			//var_dump($gamedat);
 			if ($gamedat['dice'][$vals[0]] >= 3 ) //$$$
 			{
 				$scored++;
-				echo "<input type=\"radio\" name=\"choice\" id=\"$$$\" value=\"$$$\" onclick=\"enableElements()\">\n";
-				echo "<label for=\"$$$\">$$$</label>\n";
+				echo "<br /><input type=\"radio\" name=\"choice\" id=\"$$$\" value=\"$$$\" onclick=\"enableElements()\">3 ".$vals[0]."s\n";
+				
 				
 			}
 
 			if ($gamedat['dice'][$vals[1]] >= 1 ) //G
 			{
 				$scored++;
-				echo "<input type=\"radio\" name=\"choice\" id=\"G\"  value=\"G\" onclick=\"enableElements()\">";
-				echo "<label for=\"G\">G</label>\n";
+				echo "<br /><input type=\"radio\" name=\"choice\" id=\"G\"  value=\"G\" onclick=\"enableElements()\">".$vals[1]."\n";
+				
 			}
 			
 			if ($gamedat['dice'][$vals[1]] >= 2 ) //extra G
@@ -132,15 +124,14 @@
 			if ($gamedat['dice'][$vals[1]] >= 3 ) //GGG
 			{
 				$scored++;
-				echo "<input type=\"radio\" name=\"choice\" id=\"GGG\" value=\"GGG\" onclick=\"enableElements()\">";
-				echo "<label for=\"GGG\">GGG</label>\n";
+				echo "<br /><input type=\"radio\" name=\"choice\" id=\"GGG\" value=\"GGG\" onclick=\"enableElements()\">3 ".$vals[1]."s\n";
+				
 			}
 
 			if ($gamedat['dice'][$vals[5]] >= 1 ) //D
 			{
 				$scored++;
-				echo "<input type=\"radio\" name=\"choice\" id=\"D\" value=\"D\" onclick=\"enableElements()\">";		
-				echo "<label for=\"D\">D</label>\n";
+				echo "<br /><input type=\"radio\" name=\"choice\" value=\"D\" onclick=\"enableElements()\">".$vals[5]."\n";
 			}
 			
 			if ($gamedat['dice'][$vals[5]] >= 2 ) //extra D
@@ -151,8 +142,8 @@
 			if ($gamedat['dice'][$vals[2]] >= 3 ) //RRR
 			{
 				$scored++;
-				echo "<br /><input type=\"radio\" name=\"choice\" id=\"RRR\" value=\"RRR\" onclick=\"enableElements()\">three ".$vals[2]."s\n";
-				echo "<label for=\"RRR\">RRR</label>\n";
+				echo "<br /><input type=\"radio\" name=\"choice\" value=\"RRR\" onclick=\"enableElements()\">three ".$vals[2]."s\n";
+				
 				
 			}
 
@@ -196,7 +187,7 @@
 			{
 				echo "<input type=\"hidden\" name=\"scored\" value=\"1\">\n";
 			}
-			echo "</fieldset>";
+			//echo "</fieldset>";
 		}
 		
 		function encrypt(&$gamedat, $key)
@@ -619,9 +610,7 @@
 			<input type="submit" id="keep" name="keep" value="select and save" disabled="true">
 			
 		</form>
-</div><!-- /content -->
 
-</div><!-- /page -->
 
 	</body>
 </html>
