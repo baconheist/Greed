@@ -605,9 +605,9 @@
 		
 		?>
 			<br />
-			<input type="submit" id="selectmore" name="selectmore" value="select more" disabled="true"><br />
-			<input type="submit" id="reroll" name="reroll" value="re-roll" disabled="true"><br /> <br />
-			<input type="submit" id="keep" name="keep" value="select and save" disabled="true">
+			<input type="submit" id="selectmore" name="selectmore" value="select more" disabled="disabled"><br />
+			<input type="submit" id="reroll" name="reroll" value="re-roll" disabled="disabled"><br /> <br />
+			<input type="submit" id="keep" name="keep" value="select and save" disabled="disabled">
 			
 		</form>
 
